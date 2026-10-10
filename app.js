@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getDatabase, ref, get, push, set, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 import { firebaseConfig, SETUP_COMPLETE } from "./firebase-config.js";
 
@@ -17,7 +17,19 @@ function renderProducts(){const grid=$("productGrid");if(!products.length){grid.
 async function loadProducts(){try{const snap=await get(ref(db,"products"));const all=snap.exists()?snap.val():{};products=Object.entries(all).map(([id,p])=>({id,...p})).filter(p=>p.active===true).sort((a,b)=>(a.name||"").localeCompare(b.name||""));renderProducts();setNotice("المتجر متصل بقاعدة Realtime Database. راجع الأسعار وبيانات الدفع قبل استقبال الطلبات.","success")}catch(e){console.error(e);setNotice("تعذر تحميل المنتجات. راجع قواعد Realtime Database. ("+(e.code||e.message)+")","error")}}
 async function openOrder(id){if(!currentUser){toast("سجّل الدخول بحساب Google أولًا");await signIn();return}const p=products.find(x=>x.id===id);if(!p)return;$("productId").value=p.id;$("modalTitle").textContent=p.name;$("modalPrice").textContent=money(p.price);const settings=await getPaymentSettings();$("paymentDetails").innerHTML=`<b>InstaPay:</b> ${esc(settings.instapayDetails||"بيانات الدفع لم تُضف بعد")}<br><b>Vodafone Cash:</b> ${esc(settings.vodafoneDetails||"بيانات الدفع لم تُضف بعد")}<p>${esc(settings.instructions||"حوّل قيمة الطلب فقط. لا تعتمد حالة الدفع إلا بعد مراجعة وصول الأموال.")}</p>`;$("modal").classList.remove("hidden")}
 function closeModal(){$("modal").classList.add("hidden")}
-async function signIn(){if(!auth)return toast("أكمل إعداد Firebase أولًا");try{await signInWithRedirect(auth,new GoogleAuthProvider())}catch(e){toast("تعذر تسجيل الدخول: "+e.message)}}
+
+async function signIn() {
+  if (!auth) return toast("أكمل إعداد Firebase أولًا");
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    toast("تم تسجيل الدخول بنجاح!");
+  } catch (e) {
+    console.error(e);
+    toast("تعذر تسجيل الدخول: " + e.message);
+  }
+}
+
 async function loadOrders(){const area=$("ordersArea");if(!currentUser){area.innerHTML='<div class="empty">سجّل دخولك بحساب Google لعرض طلباتك.</div>';return}try{const q=query(ref(db,"orders"),orderByChild("userId"),equalTo(currentUser.uid));const snap=await get(q);const data=snap.exists()?snap.val():{};const rows=Object.entries(data).map(([id,o])=>({id,...o})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));area.innerHTML=rows.length?rows.map(o=>`<article class="order-card"><div><b>${esc(o.productName||"طلب")}</b><small>رقم الطلب: ${esc(o.id)}</small><small>${o.createdAt?new Date(o.createdAt).toLocaleString("ar-EG"):"وقت الإرسال"}</small></div><div class="order-side"><strong>${money(o.total)}</strong><span class="status ${o.paymentStatus==="paid"?"good":""}">${esc(paymentLabel(o.paymentStatus))}</span><span class="status">${esc(orderLabel(o.status))}</span></div></article>`).join(""):'<div class="empty">لا توجد طلبات حتى الآن.</div>'}catch(e){area.innerHTML='<div class="empty">تعذر تحميل الطلبات. '+esc(e.code||e.message||"")+'</div>'}}
 
 $("signinBtn").addEventListener("click",signIn);
@@ -37,9 +49,6 @@ if(!configReady()) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getDatabase(app);
-
-    // معالجة نتيجة إعادة التوجيه للتحقق من تسجيل الدخول بسلاسة
-    getRedirectResult(auth).catch(e => console.warn(e));
 
     onAuthStateChanged(auth, async user => {
       currentUser = user;
