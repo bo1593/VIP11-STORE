@@ -19,8 +19,41 @@ async function openOrder(id){if(!currentUser){toast("سجّل الدخول بح�
 function closeModal(){$("modal").classList.add("hidden")}
 async function signIn(){if(!auth)return toast("أكمل إعداد Firebase أولًا");try{await signInWithRedirect(auth,new GoogleAuthProvider())}catch(e){toast("تعذر تسجيل الدخول: "+e.message)}}
 async function loadOrders(){const area=$("ordersArea");if(!currentUser){area.innerHTML='<div class="empty">سجّل دخولك بحساب Google لعرض طلباتك.</div>';return}try{const q=query(ref(db,"orders"),orderByChild("userId"),equalTo(currentUser.uid));const snap=await get(q);const data=snap.exists()?snap.val():{};const rows=Object.entries(data).map(([id,o])=>({id,...o})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));area.innerHTML=rows.length?rows.map(o=>`<article class="order-card"><div><b>${esc(o.productName||"طلب")}</b><small>رقم الطلب: ${esc(o.id)}</small><small>${o.createdAt?new Date(o.createdAt).toLocaleString("ar-EG"):"وقت الإرسال"}</small></div><div class="order-side"><strong>${money(o.total)}</strong><span class="status ${o.paymentStatus==="paid"?"good":""}">${esc(paymentLabel(o.paymentStatus))}</span><span class="status">${esc(orderLabel(o.status))}</span></div></article>`).join(""):'<div class="empty">لا توجد طلبات حتى الآن.</div>'}catch(e){area.innerHTML='<div class="empty">تعذر تحميل الطلبات. '+esc(e.code||e.message||"")+'</div>'}}
-$("signinBtn").addEventListener("click",signIn);$("signoutBtn").addEventListener("click",()=>signOut(auth));$("closeModal").addEventListener("click",closeModal);$("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeModal()});
+
+$("signinBtn").addEventListener("click",signIn);
+$("signoutBtn").addEventListener("click",()=>signOut(auth));
+$("closeModal").addEventListener("click",closeModal);
+$("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeModal()});
 $("paymentMethod").addEventListener("change",async()=>{const settings=await getPaymentSettings();$("paymentDetails").innerHTML=`<b>InstaPay:</b> ${esc(settings.instapayDetails||"غير مضاف")}<br><b>Vodafone Cash:</b> ${esc(settings.vodafoneDetails||"غير مضاف")}<p>${esc(settings.instructions||"سيتم التحقق يدويًا.")}</p>`});
+
 $("orderForm").addEventListener("submit",async e=>{e.preventDefault();if(!currentUser)return toast("سجّل الدخول أولًا");const productId=$("productId").value;const playerId=$("playerId").value.trim();const receiptRef=$("receiptRef").value.trim();const paymentMethod=$("paymentMethod").value;const p=products.find(x=>x.id===productId);if(!p||!playerId||!receiptRef)return toast("أكمل بيانات الطلب");const btn=e.submitter;btn.disabled=true;btn.textContent="جارٍ إرسال الطلب…";try{const live=await get(ref(db,"products/"+productId));if(!live.exists()||live.val().active!==true)throw new Error("المنتج لم يعد متاحًا");const product=live.val();const order={userId:currentUser.uid,userEmail:currentUser.email||"",productId,productName:product.name,unitPrice:Number(product.price),quantity:1,total:Number(product.price),playerId,paymentMethod,receiptRef,paymentStatus:"pending",status:"awaiting_payment",createdAt:Date.now()};const created=push(ref(db,"orders"));await set(created,order);closeModal();$("orderForm").reset();toast("تم تسجيل الطلب. الدفع لم يتأكد بعد؛ انتظر مراجعة الإدارة.");await loadOrders()}catch(err){console.error(err);toast("لم يتم تسجيل الطلب: "+(err.message||err.code||"خطأ"))}finally{btn.disabled=false;btn.textContent="إرسال الطلب"}});
-if(!configReady()) {setNotice("الإعداد غير مكتمل: اكتب بريد المدير في firebase-config.js واضبط قواعد Realtime Database، ثم غيّر SETUP_COMPLETE إلى true.","error");$("productGrid").innerHTML='<div class="empty">الملفات جاهزة، لكن الاتصال الحقيقي غير مفعّل حتى إكمال إعداد Firebase.</div>';$("signinBtn").disabled=true}
-else {try{app=initializeApp(firebaseConfig);auth=getAuth(app);db=getDatabase(app);getRedirectResult(auth).catch(e=>console.warn(e));onAuthStateChanged(auth,async user=>{currentUser=user;$("signinBtn").classList.toggle("hidden",!!user);$("signoutBtn").classList.toggle("hidden",!user);if(user)toast("أهلًا "+(user.displayName||"بك"));await loadOrders()});await loadProducts()}catch(e){console.error(e);setNotice("تعذر تشغيل Firebase. راجع firebase-config.js.","error")}}
+
+if(!configReady()) {
+  setNotice("الإعداد غير مكتمل: اكتب بريد المدير في firebase-config.js واضبط قواعد Realtime Database، ثم غيّر SETUP_COMPLETE إلى true.","error");
+  $("productGrid").innerHTML='<div class="empty">الملفات جاهزة، لكن الاتصال الحقيقي غير مفعّل حتى إكمال إعداد Firebase.</div>';
+  $("signinBtn").disabled=true;
+} else {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getDatabase(app);
+
+    // معالجة نتيجة إعادة التوجيه للتحقق من تسجيل الدخول بسلاسة
+    getRedirectResult(auth).catch(e => console.warn(e));
+
+    onAuthStateChanged(auth, async user => {
+      currentUser = user;
+      $("signinBtn").classList.toggle("hidden", !!user);
+      $("signoutBtn").classList.toggle("hidden", !user);
+      if (user) {
+        toast("أهلًا " + (user.displayName || "بك"));
+      }
+      await loadOrders();
+    });
+
+    await loadProducts();
+  } catch(e) {
+    console.error(e);
+    setNotice("تعذر تشغيل Firebase. راجع firebase-config.js.","error");
+  }
+}
