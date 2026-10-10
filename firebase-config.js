@@ -13,4 +13,4 @@ export const firebaseConfig = {
 // اكتب بريد Google الذي ستستخدمه كمدير. استخدم البريد نفسه في قواعد Realtime Database.
 export const ADMIN_EMAIL = "bodo36711@gmail.com";
 // اتركها false حتى تضبط البريد وتنشر قواعد الأمان، ثم غيّرها إلى true.
-export const SETUP_COMPLETE = false;
+export const SETUP_COMPLETE = true;
