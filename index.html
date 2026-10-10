@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11110f"><title>VIP11 STORE | المتجر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">V11</span><span>VIP11 <b>STORE</b><small>متجرك للشحن الرقمي</small></span></a><div class="head-actions"><button id="signinBtn" class="btn btn-outline">دخول Google</button><button id="signoutBtn" class="btn btn-outline hidden">خروج</button><a class="btn btn-gold" href="#orders">طلباتي</a></div></header>
+<main class="wrap">
+<section class="hero"><div><span class="eyebrow">DIGITAL • FAST • SECURE</span><h1>شحنك الرقمي،<br><em>بثقة VIP.</em></h1><p>اختار خدمتك، أرسل بيانات الطلب، وحوّل بالطريقة المناسبة. الدفع والشحن يتم التحقق منهما يدويًا.</p><a class="btn btn-gold" href="#products">تصفح المنتجات <span>←</span></a></div><div class="hero-art"><div class="orbit"></div><div class="hero-badge"><small>VIP11</small><strong>STORE</strong><span>LEVEL UP</span></div><span class="spark s1">✦</span><span class="spark s2">✧</span></div></section>
+<section class="section-head" id="products"><div><span class="eyebrow">OUR CATALOG</span><h2>المنتجات المتاحة</h2></div><span class="subtle">الأسعار بالجنيه المصري</span></section>
+<div id="notice" class="notice">جاري الاتصال بقاعدة البيانات…</div>
+<section id="productGrid" class="product-grid"></section>
+<section class="section-head" id="orders"><div><span class="eyebrow">ORDER TRACKING</span><h2>طلباتي</h2></div><span class="subtle">سجّل دخولك لمتابعة طلباتك</span></section>
+<div id="ordersArea" class="orders-list"><div class="empty">سجّل دخولك بحساب Google لعرض طلباتك.</div></div>
+<section class="pay-info"><div><span class="eyebrow">PAYMENT METHODS</span><h2>طرق الدفع</h2><p>حوّل فقط إلى بيانات الدفع المعروضة عند إتمام الطلب، ثم أدخل رقم العملية. لا ترسل كلمة مرور أو رمز تحقق لأي شخص.</p></div><div class="pay-pills"><span>InstaPay</span><span>Vodafone Cash</span></div></section>
+</main>
+<footer><span>© VIP11 STORE</span><span>الطلب لا يُعتبر مدفوعًا قبل التحقق من التحويل.</span><a href="admin.html">دخول الإدارة</a></footer>
+<div id="modal" class="modal hidden"><div class="modal-card"><button class="modal-close" id="closeModal" aria-label="إغلاق">×</button><span class="eyebrow">COMPLETE ORDER</span><h2 id="modalTitle">إتمام الطلب</h2><p id="modalPrice" class="price-large"></p><div id="paymentDetails" class="payment-details"></div><form id="orderForm"><input type="hidden" id="productId"><label>معرّف اللاعب / اسم المستخدم (لو مطلوب)<input id="playerId" maxlength="100" placeholder="اكتب البيانات المطلوبة" required></label><label>طريقة الدفع<select id="paymentMethod" required><option value="instapay">InstaPay</option><option value="vodafone_cash">Vodafone Cash</option></select></label><label>رقم العملية أو مرجع التحويل<input id="receiptRef" maxlength="120" placeholder="اكتب رقم العملية بعد التحويل" required></label><p class="small-note">سيُسجّل الطلب بانتظار مراجعة الدفع. كتابة رقم العملية ليست إثباتًا كافيًا وحدها.</p><button class="btn btn-gold btn-block" type="submit">إرسال الطلب</button></form></div></div>
+<div id="toast" class="toast hidden"></div>
+<script type="module" src="app.js"></script>
+</body></html>
