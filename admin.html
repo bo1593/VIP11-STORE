@@ -1,9 +1,149 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#11110f"><title>VIP11 STORE | الإدارة</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head>
-<body><header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">V11</span><span>VIP11 <b>STORE</b><small>لوحة الإدارة</small></span></a><div class="head-actions"><a class="btn btn-outline" href="index.html">المتجر</a><button id="adminSignIn" class="btn btn-gold">دخول Google</button><button id="adminSignOut" class="btn btn-outline hidden">خروج</button></div></header>
-<main class="wrap admin-wrap"><section class="admin-hero"><span class="eyebrow">CONTROL CENTER</span><h1>إدارة <em>المتجر</em></h1><p>إدارة المنتجات ومراجعة التحويلات وتنفيذ الشحن يدويًا.</p></section><div id="adminNotice" class="notice">يجب إعداد Firebase وتحديد بريد المدير في ملفات المشروع قبل الاستخدام.</div>
-<section id="adminApp" class="hidden"><div class="admin-tabs"><button class="tab active" data-tab="ordersPanel">الطلبات</button><button class="tab" data-tab="productsPanel">المنتجات</button><button class="tab" data-tab="paymentsPanel">بيانات الدفع</button></div>
-<section id="ordersPanel" class="admin-panel"><div class="section-head"><div><span class="eyebrow">ORDER QUEUE</span><h2>الطلبات الواردة</h2></div><button id="refreshOrders" class="btn btn-outline">تحديث</button></div><div id="adminOrders" class="orders-list"></div></section>
-<section id="productsPanel" class="admin-panel hidden"><div class="section-head"><div><span class="eyebrow">CATALOG MANAGEMENT</span><h2>إضافة منتج / تعديل الأسعار</h2></div></div><form id="productForm" class="admin-form"><input type="hidden" id="editProductId"><label>اسم المنتج<input id="productName" maxlength="100" required placeholder="مثال: PUBG Mobile UC"></label><label>القسم<select id="productCategory"><option>PUBG Mobile</option><option>ألعاب أخرى</option><option>FOFO Chat</option><option>بطاقات رقمية</option><option>اشتراكات</option></select></label><label>الوصف<input id="productDescription" maxlength="240" placeholder="تفاصيل مختصرة"></label><label>السعر بالجنيه<input id="productPrice" type="number" min="1" max="100000" step="0.01" required></label><label>صورة المنتج (رابط HTTPS اختياري)<input id="productImage" type="url" placeholder="https://..."></label><label class="check-label"><input id="productActive" type="checkbox" checked> المنتج متاح للبيع</label><div class="form-actions"><button class="btn btn-gold" type="submit">حفظ المنتج</button><button id="cancelEdit" class="btn btn-outline hidden" type="button">إلغاء التعديل</button></div></form><div id="adminProducts" class="orders-list"></div></section>
-<section id="paymentsPanel" class="admin-panel hidden"><div class="section-head"><div><span class="eyebrow">PAYMENT SETTINGS</span><h2>بيانات التحويل</h2></div></div><p class="small-note">اكتب بيانات الاستقبال التي تملكها فقط. ستظهر للعملاء قبل التحويل. احفظها بعد مراجعتها.</p><form id="paymentForm" class="admin-form"><label>بيانات InstaPay (اسم المستخدم أو رابط الدفع)<input id="instapayDetails" maxlength="180" placeholder="مثال: username@instapay"></label><label>بيانات Vodafone Cash<input id="vodafoneDetails" maxlength="180" placeholder="رقم المحفظة المخصص للاستقبال"></label><label>تعليمات إضافية<textarea id="paymentInstructions" maxlength="400" rows="3" placeholder="حوّل قيمة الطلب فقط، واحتفظ برقم العملية."></textarea></label><button class="btn btn-gold" type="submit">حفظ بيانات الدفع</button></form></section>
-</section></main><footer><span>VIP11 STORE • ADMIN</span><span>لا تعتمد أي تحويل من صورة إيصال فقط؛ تحقق من وصول المبلغ.</span></footer><div id="toast" class="toast hidden"></div><script type="module" src="admin.js"></script></body></html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11110f">
+<title>VIP11 STORE | الإدارة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">V11</span><span>VIP11 <b>STORE</b><small>لوحة الإدارة</small></span></a>
+  <div class="head-actions">
+    <a class="btn btn-outline" href="index.html">المتجر</a>
+    <button id="adminSignIn" class="btn btn-gold">دخول Google</button>
+    <button id="adminSignOut" class="btn btn-outline hidden">خروج</button>
+  </div>
+</header>
+
+<main class="wrap admin-wrap">
+  <section class="admin-hero">
+    <span class="eyebrow">CONTROL CENTER</span>
+    <h1>إدارة <em>المتجر</em></h1>
+    <p>إدارة المنتجات، التحكم بالأقسام، مراجعة البانر، وتنفيذ الشحن يدويًا.</p>
+  </section>
+
+  <div id="adminNotice" class="notice">يجب إعداد Firebase وتحديد بريد المدير في ملفات المشروع قبل الاستخدام.</div>
+
+  <section id="adminApp" class="hidden">
+    <div class="admin-tabs">
+      <button class="tab active" data-tab="ordersPanel">الطلبات</button>
+      <button class="tab" data-tab="productsPanel">المنتجات والتطبيقات</button>
+      <button class="tab" data-tab="bannerPanel">البانر والشريط المتحرك</button>
+      <button class="tab" data-tab="paymentsPanel">بيانات الدفع</button>
+    </div>
+
+    <!-- لوحة الطلبات -->
+    <section id="ordersPanel" class="admin-panel">
+      <div class="section-head">
+        <div><span class="eyebrow">ORDER QUEUE</span><h2>الطلبات الواردة</h2></div>
+        <button id="refreshOrders" class="btn btn-outline">تحديث</button>
+      </div>
+      <div id="adminOrders" class="orders-list"></div>
+    </section>
+
+    <!-- لوحة إدارة المنتجات والتطبيقات -->
+    <section id="productsPanel" class="admin-panel hidden">
+      <div class="section-head">
+        <div><span class="eyebrow">CATALOG MANAGEMENT</span><h2>إضافة تطبيق / منتج جديد</h2></div>
+      </div>
+      <form id="productForm" class="admin-form">
+        <input type="hidden" id="editProductId">
+        
+        <label>اسم التطبيق / المنتج
+          <input id="productName" maxlength="100" required placeholder="مثال: 60 UC PUBG Mobile">
+        </label>
+        
+        <label>القسم الرئيسي
+          <select id="productCategory" required>
+            <option value="games">🎮 شحن الألعاب (PUBG / FreeFire...)</option>
+            <option value="chat">💬 برامج الدردشة (FOFO Chat...)</option>
+            <option value="services">🛠️ بطاقات رقمية وخدمات</option>
+          </select>
+        </label>
+
+        <label>نوع المنتج وطريقة الشراء
+          <select id="productType" required>
+            <option value="id">🆔 شحن بالـ ID فقط (إدخال معرف اللاعب)</option>
+            <option value="voucher">🎫 كارت كود / بطاقة رقمية (بدون إدخال ID)</option>
+            <option value="id_quantity">🔢 شحن بالـ ID + إتاحة خانة تحديد الكمية</option>
+          </select>
+        </label>
+
+        <label>الوصف
+          <input id="productDescription" maxlength="240" placeholder="تفاصيل مختصرة أو تعليمات الشحن">
+        </label>
+        
+        <label>السعر بالجنيه
+          <input id="productPrice" type="number" min="1" max="100000" step="0.01" required placeholder="مثال: 55.00">
+        </label>
+        
+        <label>صورة المنتج (رابط HTTPS اختياري)
+          <input id="productImage" type="url" placeholder="https://...">
+        </label>
+        
+        <label class="check-label">
+          <input id="productActive" type="checkbox" checked> المنتج متاح للبيع في المتجر
+        </label>
+
+        <div class="form-actions">
+          <button class="btn btn-gold" type="submit">حفظ المنتج</button>
+          <button id="cancelEdit" class="btn btn-outline hidden" type="button">إلغاء التعديل</button>
+        </div>
+      </form>
+      <div id="adminProducts" class="orders-list"></div>
+    </section>
+
+    <!-- لوحة إدارة البانر والشريط النصي المتحرك -->
+    <section id="bannerPanel" class="admin-panel hidden">
+      <div class="section-head">
+        <div><span class="eyebrow">PROMOTION CONTROL</span><h2>إدارة البانر والشريط النصي المتحرك</h2></div>
+      </div>
+      <form id="bannerForm" class="admin-form">
+        <label>رابط خلفية / صورة البانر المتحرك (URL)
+          <input id="bannerImageUrl" type="url" placeholder="https://...">
+        </label>
+        <label>عنوان البانر الترويجي
+          <input id="bannerText" maxlength="150" placeholder="مثال: أرباحك وشحنك معلق بثواني معدودة..">
+        </label>
+        <label>نص الشريط النصي المتحرك (Marquee)
+          <textarea id="marqueeText" rows="3" placeholder="أدخل العروض المتحركة متبوعة بـ ✉️ أو 🔥"></textarea>
+        </label>
+        <button class="btn btn-gold" type="submit">حفظ وتحديث البانر</button>
+      </form>
+    </section>
+
+    <!-- لوحة بيانات الدفع -->
+    <section id="paymentsPanel" class="admin-panel hidden">
+      <div class="section-head">
+        <div><span class="eyebrow">PAYMENT SETTINGS</span><h2>بيانات التحويل</h2></div>
+      </div>
+      <p class="small-note">اكتب بيانات الاستقبال التي تملكها فقط. ستظهر للعملاء قبل التحويل. احفظها بعد مراجعتها.</p>
+      <form id="paymentForm" class="admin-form">
+        <label>بيانات InstaPay (اسم المستخدم أو رابط الدفع)
+          <input id="instapayDetails" maxlength="180" placeholder="مثال: username@instapay">
+        </label>
+        <label>بيانات Vodafone Cash
+          <input id="vodafoneDetails" maxlength="180" placeholder="رقم المحفظة المخصص للاستقبال">
+        </label>
+        <label>تعليمات إضافية
+          <textarea id="paymentInstructions" maxlength="400" rows="3" placeholder="حوّل قيمة الطلب فقط، واحتفظ برقم العملية."></textarea>
+        </label>
+        <button class="btn btn-gold" type="submit">حفظ بيانات الدفع</button>
+      </form>
+    </section>
+  </section>
+</main>
+
+<footer>
+  <span>VIP11 STORE • ADMIN</span>
+  <span>لا تعتمد أي تحويل من صورة إيصال فقط؛ تحقق من وصول المبلغ.</span>
+</footer>
+
+<div id="toast" class="toast hidden"></div>
+<script type="module" src="admin.js"></script>
+</body>
+</html>
